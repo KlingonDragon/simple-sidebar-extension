@@ -1,0 +1,63 @@
+div.box {
+    --min-col-size: 20ch;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(var(--min-col-size), 1fr));
+    grid-auto-rows: max-content;
+    margin-block-start: -0.125rem;
+    padding: 0.25rem;
+    gap: 0.25rem;
+
+    &.small-cols {
+        --min-col-size: 12ch;
+    }
+
+    & :is(a, label) > img {
+        height: 1.5em;
+    }
+
+}
+
+div.quick-search {
+    display: grid;
+    grid-template: "label button" max-content "output output" max-content / 1fr max-content;
+    padding: 0.125rem;
+    gap: 0.125rem;
+    border: 1px solid graytext;
+
+    & label {
+        grid-area: label;
+        display: grid;
+        grid-template-columns: minmax(min-content, max-content) minmax(12ch, 1fr);
+        align-items: center;
+        gap: 0.125rem;
+    }
+
+    & input,
+    & a {
+        padding: 0.125rem;
+    }
+
+    & a {
+        grid-area: button;
+        color: buttontext;
+        background: buttonface;
+        text-decoration: none;
+        border: 1px outset currentcolor;
+        border-radius: 0.25rem;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+
+        :root[data-no-link-open-buttons] & {
+            display: none;
+        }
+    }
+
+    & output {
+        grid-area: output;
+        font-size: x-small;
+        text-overflow: ellipsis;
+        text-wrap: nowrap;
+        overflow: clip;
+    }
+}

@@ -1,0 +1,48 @@
+*,
+*:before,
+*:after {
+    box-sizing: border-box;
+    min-width: 0;
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+    gap: 0;
+    outline: none;
+    font-family: Sans-serif;
+    line-height: calc(1em + 0.5rem);
+    text-align: center;
+    border: none;
+}
+
+:root,
+html,
+body {
+    font-size: 1rem;
+}
+
+a {
+    color: inherit;
+}
+
+img,
+picture,
+video,
+svg {
+    max-width: 100%;
+    height: auto;
+    vertical-align: middle;
+    object-fit: contain;
+    font-style: italic;
+}
+
+input,
+button,
+textarea,
+select {
+    font: inherit;
+    border: 1px solid graytext;
+
+    &:focus-visible {
+        box-shadow: inset 0 0 0.0625rem 0.0625rem currentColor;
+    }
+}
