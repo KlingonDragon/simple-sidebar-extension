@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta name="color-scheme" content="light dark">
+        <style>
+            @import url(/style/common.css);
+            @import url(/style/box-style.css);
+
+            html,
+            body,
+            main {
+                height: 100svh;
+
+            }
+
+            main {
+                display: grid;
+                grid-template: "hh mm" max-content "output output" max-content "toggles toggles" 1fr / 1fr 1fr;
+                padding: 0.125rem;
+                gap: 0.125rem;
+
+                &>output {
+                    grid-area: output;
+                }
+
+                &>div.toggles {
+                    grid-area: toggles;
+                    grid-auto-rows: unset;
+
+                    &>label {
+                        font-size: x-small;
+                        border: 1px solid graytext;
+                        display: grid;
+                        align-items: center;
+
+                        &:has(> input:checked) {
+                            border-color: currentColor;
+                        }
+
+                        &>input {
+                            display: none;
+                        }
+                    }
+                }
+            }
+        </style>
+        <script src="https://cdn.jsdelivr.net/pyodide/v0.27.3/full/pyodide.js"></script>
+        <script src='../scripts/temporal-polyfill.js'></script>
+        <script src="../scripts/timezone.js" type="module"></script>
+        <base target="_blank" />
+    </head>
+    <body>
+        <main></main>
+    </body>
+</html>

@@ -14,6 +14,7 @@ header {
 }
 
 main {
+    zoom: 0.9;
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
     grid-auto-rows: max-content;
@@ -35,11 +36,18 @@ fieldset {
     }
 
     & > .fieldset-container {
+        margin-block-start: -0.125rem;
         transition: max-height 1s ease-in-out, opacity 1s ease-in-out;
         opacity: 1;
         max-height: 100vh;
         border: none;
         overflow: hidden;
+
+        & > div {
+            & + & {
+                border-block-start: 1px solid color-mix(in srgb, canvas 50%, graytext 50%);
+            }
+        }
     }
 
     @media screen and (max-width: 480px) {

@@ -2,7 +2,7 @@
     "manifest_version": 3,
     "name": "Simple Sidebar",
     "description": "Simple Sidebar that provides quick search and shortcut functions",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "icons": {
         "16": "icon.png",
         "24": "icon.png",
@@ -23,7 +23,16 @@
         "service_worker": "scripts/background.js"
     },
     "permissions": [
+        "contextMenus",
         "storage",
         "sidePanel"
-    ]
+    ],
+    "content_security_policy": {
+        "sandbox": "sandbox allow-scripts; script-src 'self' 'wasm-eval' https://cdn.jsdelivr.net"
+    },
+    "sandbox": {
+        "pages": [
+            "pages/timezone.html"
+        ]
+    }
 }
