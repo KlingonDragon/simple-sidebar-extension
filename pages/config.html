@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Simple Sidebar Config</title>
+        <meta name="color-scheme" content="light dark">
+        <style>
+            @import url(/style/common.css);
+            @import url(/style/layout.css);
+            @import url(/style/box-style.css);
+
+            button {
+                &.red {
+                    background-color: color-mix(in oklch, buttonface 50%, #640000);
+                }
+
+                &.yellow {
+                    background-color: color-mix(in oklch, buttonface 50%, #646400);
+                }
+
+                &.green {
+                    background-color: color-mix(in oklch, buttonface 50%, #006400);
+                }
+
+                &.delete {
+                    display: grid;
+                    grid-template-columns: 1fr 2ch;
+                    align-items: center;
+                    --red: firebrick;
+                    border-color: var(--red);
+                    overflow: hidden;
+                    padding: 0;
+
+                    &::after {
+                        content: '\01F5D1';
+                        background-color: var(--red);
+                        color: white;
+                        display: grid;
+                        align-items: center;
+                        padding: 0.125rem;
+                        align-self: stretch;
+                    }
+
+                    &:is(:hover, :focus-visible) {
+                        --red: #FF0000;
+                        background-color: firebrick;
+                    }
+                }
+            }
+        </style>
+        <script type="module" src="/scripts/config.js"></script>
+        <base target="_blank" />
+    </head>
+    <body>
+        <header>
+            <h1>Simple Sidebar Config</h1>
+        </header>
+        <main></main>
+        <footer><a href="https://github.com/KlingonDragon/simple-sidebar-extension">&copy; KlingonDragon</a></footer>
+    </body>
+</html>

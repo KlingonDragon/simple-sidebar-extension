@@ -9,8 +9,14 @@ interface GroupConfig {
     badgeGallery?: BadgeConfig[];
     defaultShrink?: boolean;
 }
-interface Config {
-    groups?: GroupConfig[];
-    useTZ?: boolean;
-    tzList?: string[];
+interface PageFlags {
+    colourScheme?: string;
+    hideOpenLinkButtons: boolean;
+    hideToggleCheckboxes: boolean;
+}
+interface Config extends PageFlags {
+    groups: GroupConfig[];
+    useTZ: boolean;
+    tzList: string[];
+    defaultTZList: string[];
 }

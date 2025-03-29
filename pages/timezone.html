@@ -10,7 +10,7 @@
             body,
             main {
                 height: 100svh;
-
+                overflow: hidden;
             }
 
             main {
@@ -25,27 +25,11 @@
 
                 &>div.toggles {
                     grid-area: toggles;
-                    grid-auto-rows: unset;
-
-                    &>label {
-                        font-size: x-small;
-                        border: 1px solid graytext;
-                        display: grid;
-                        align-items: center;
-
-                        &:has(> input:checked) {
-                            border-color: currentColor;
-                        }
-
-                        &>input {
-                            display: none;
-                        }
-                    }
+                    overflow-y: auto;
                 }
             }
         </style>
-        <script src="https://cdn.jsdelivr.net/pyodide/v0.27.3/full/pyodide.js"></script>
-        <script src='../scripts/temporal-polyfill.js'></script>
+        <script src="https://cdn.jsdelivr.net/pyodide/dev/full/pyodide.js"></script>
         <script src="../scripts/timezone.js" type="module"></script>
         <base target="_blank" />
     </head>

@@ -20,6 +20,14 @@ body {
     font-size: 1rem;
 }
 
+[data-colour-scheme="Light"] {
+    color-scheme: light;
+}
+
+[data-colour-scheme="Dark"] {
+    color-scheme: dark;
+}
+
 a {
     color: inherit;
 }
@@ -45,4 +53,17 @@ select {
     &:focus-visible {
         box-shadow: inset 0 0 0.0625rem 0.0625rem currentColor;
     }
+}
+
+textarea {
+    text-align: start;
+}
+
+button {
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 0.5rem;
+    padding: 0.125rem;
 }

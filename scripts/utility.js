@@ -1,5 +1,5 @@
 /// <reference path="types/utility.d.ts"/>
-/// <reference path="types/groups.d.ts"/>
+/// <reference path="types/config.d.ts"/>
 HTMLElement.prototype._ = function (...children) { this.append(...children.filter(item => item !== undefined)); return this; };
 HTMLElement.prototype.__ = function (...children) { this.replaceChildren(...children.filter(item => item !== undefined)); return this; };
 HTMLElement.prototype.on = function (type, listener) { this.addEventListener(type, listener); return this; };
@@ -8,12 +8,15 @@ const __main = document.querySelector('main');
 if (!__main) { alert('HTML missing <main>'); throw 'HTML missing <main>'; }
 export const
     main = __main,
-    /** @type {<TagName extends keyof HTMLElementTagNameMap>(tagName: TagName, props?: {dataset?: DOMStringMap; style?: Partial<CSSStyleDeclaration>; classList?: (string | undefined)[]; [key:string]:any}) => HTMLElementTagNameMap[TagName]} */
-    _ = (tagName, { dataset, style, classList, ...props } = {}) => {
+    /** @type {(flags:Partial<PageFlags>)=>void} */
+    configPageFlags = (flags) => Object.entries(flags).forEach(([key, value]) => (value ? document.documentElement.dataset[key] = `${value}` : delete document.documentElement.dataset[key])),
+    /** @type {<TagName extends keyof HTMLElementTagNameMap>(tagName: TagName, props?: ElementProps) => HTMLElementTagNameMap[TagName]} */
+    _ = (tagName, { dataset, style, classList, attributeList, ...props } = {}) => {
         const node = document.createElement(tagName);
         if (dataset) { Object.assign(node.dataset, dataset); }
         if (style) { Object.assign(node.style, style); }
         if (classList) { node.classList.add(...classList.filter(item => item !== undefined)); }
+        if (attributeList) { Object.entries(attributeList).forEach(([attribute, value]) => node.setAttribute(attribute, value)); }
         Object.assign(node, props);
         return node;
     },
@@ -25,22 +28,25 @@ export const
             console.warn(e);
         });
     },
-    /** @type {({}:{ legendText:string, content:AppendItem[], defaultShrink?:boolean }) => HTMLFieldSetElement} */
-    createContainer = ({ legendText, content, defaultShrink }) => {
-
+    /** @type {<O, K extends keyof O>(obj: O, key: K)=>Omit<O, K>} */
+    omit = (obj, key) => { const { [key]: _key, ...rest } = obj; return rest; },
+    /** @type {({}:{ legendText: string; content?: AppendItem[]; defaultShrink?:boolean; appendToMain?:boolean }) => HTMLFieldSetElement} */
+    createContainer = ({ legendText, content, defaultShrink, appendToMain = true }) => {
         const
-            container = _('div', { classList: ['fieldset-container', defaultShrink ? 'shrink' : undefined] })._(...content),
+            container = _('div', { classList: ['fieldset-container', defaultShrink ? 'shrink' : undefined] })._(...content ?? []),
             fieldset = _('fieldset')._(_('legend', { innerText: legendText }).on('click', () => container.classList.toggle('shrink')), container);
-        main._(fieldset);
+        appendToMain && main._(fieldset);
         return fieldset;
     },
+    /** @type {(type?:'small-cols'|'dynamic'|'toggles')=>HTMLDivElement} */
+    createBox = (type) => _('div', { classList: ['box', type] }),
     /** @type {({}:GroupConfig) => HTMLFieldSetElement} */
     createGroup = ({ legendText, staticLinks, inputLinks, badgeGallery, defaultShrink }) => createContainer({
         legendText,
         content: [
-            staticLinks && _('div', { classList: ['box', 'small-cols'] })._(...staticLinks?.map(createStaticLink)),
-            inputLinks && _('div', { classList: ['box'] })._(...(inputLinks?.map(createInputLink))),
-            badgeGallery && _('div', { classList: ['dynamic'] })._(...badgeGallery.map(createBadge)),
+            staticLinks && createBox('small-cols')._(...staticLinks?.map(createStaticLink)),
+            inputLinks && createBox()._(...(inputLinks?.map(createInputLink))),
+            badgeGallery && createBox('dynamic')._(...badgeGallery.map(createBadge)),
         ],
         defaultShrink
     }),
@@ -88,5 +94,11 @@ export const
                 setTimeout(refresh, 5 * 60 * 1000 + ((Math.random() - 0.5) * 3));
             };
         return href ? _('a', { href })._(img) : img;
-    }
-    ;
+    },
+    /** @type {({}:{innerText: string; value: string; checked: boolean; onChange: ({}:{value: string; checked: boolean})=>void}) => HTMLLabelElement & {checkBox: {checked: boolean; value: string}}} */
+    // @ts-ignore // checkBox prop applied
+    createToggle = ({ innerText, value, checked, onChange }) => {
+        const checkBox = _('input', { type: 'checkbox', value, checked, attributeList: { tabindex: '-1' } }).on('change', () => onChange(checkBox));
+        return _('label', { checkBox, attributeList: { tabindex: '0' } })._(_('span', { innerText }), checkBox)
+            .on('keydown', ({ key }) => [' ', 'Enter'].includes(key) && checkBox.click());
+    };

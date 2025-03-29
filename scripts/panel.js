@@ -1,22 +1,38 @@
-/// <reference path="types/external/chrome-types.d.ts"/>
-import { _, createGroup, main, createContainer } from "./utility.js";
-document.documentElement.dataset.noLinkOpenButtons = '';
+/// <reference path="types/chrome-types.d.ts"/>
+import { _, createGroup, main, createContainer, configPageFlags, omit } from "./utility.js";
+
+//#region Nav
+nav: {
+    const nav = document.querySelector('nav');
+    if (!nav) { break nav; }
+    nav._(
+        _('button', { innerText: 'Config' }).on('click', () => chrome.runtime.openOptionsPage()),
+    );
+}
+//#endregion
+//#region Render
 async function render() {
-    chrome.storage.sync.get("config").then(({ config }) => {
+    chrome.storage.sync.get("config").then(({ config: configFromStorage }) => {
+        const
+            /** @type {Config} */
+            config = configFromStorage,
+            { colourScheme, hideOpenLinkButtons, hideToggleCheckboxes, groups, useTZ } = config;
         main.__();
-        config?.groups?.forEach(createGroup);
-        if (config?.useTZ) {
+        configPageFlags({ colourScheme, hideOpenLinkButtons, hideToggleCheckboxes });
+        groups?.forEach(createGroup);
+        if (useTZ) {
             const iframe = _('iframe', {
-                src: `./timezone.html#${config?.tzList.join(',') ?? 'UTC'}`,
+                src: `./timezone.html?config=${JSON.stringify(omit(config, 'groups'))}`,
                 style: {
                     width: "100%",
-                    height: "10rem",
+                    height: "12rem",
                 }
             });
             iframe.setAttribute('allow', "clipboard-write 'self' *");
-            createContainer({ legendText: 'Convert Times', content: [iframe] });
+            createContainer({ legendText: 'TimeZone Converter', content: [iframe] });
         }
     });
 }
 chrome.storage.onChanged.addListener(render);
-render();;
+render();
+//#endregion
