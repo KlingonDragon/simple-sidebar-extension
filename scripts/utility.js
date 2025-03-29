@@ -93,6 +93,7 @@ export const
                 img.src = `${src}${src.includes('?') ? '&' : '?'}refreshTime=${Date.now()}`;
                 setTimeout(refresh, 5 * 60 * 1000 + ((Math.random() - 0.5) * 3));
             };
+        img.on('click', refresh); refresh();
         return href ? _('a', { href })._(img) : img;
     },
     /** @type {({}:{innerText: string; value: string; checked: boolean; onChange: ({}:{value: string; checked: boolean})=>void}) => HTMLLabelElement & {checkBox: {checked: boolean; value: string}}} */
