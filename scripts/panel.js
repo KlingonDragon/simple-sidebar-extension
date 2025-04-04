@@ -2,13 +2,9 @@
 import { _, createGroup, main, createContainer, configPageFlags, omit } from "./utility.js";
 
 //#region Nav
-nav: {
-    const nav = document.querySelector('nav');
-    if (!nav) { break nav; }
-    nav._(
-        _('button', { innerText: 'Config' }).on('click', () => chrome.runtime.openOptionsPage()),
-    );
-}
+document.querySelector('nav')?._(
+    _('button', { innerText: 'Config' }).on('click', () => chrome.runtime.openOptionsPage()),
+);
 //#endregion
 //#region Render
 async function render() {
@@ -21,15 +17,18 @@ async function render() {
         configPageFlags({ colourScheme, hideOpenLinkButtons, hideToggleCheckboxes });
         groups?.forEach(createGroup);
         if (useTZ) {
-            const iframe = _('iframe', {
-                src: `./timezone.html?config=${JSON.stringify(omit(config, 'groups'))}`,
-                style: {
-                    width: "100%",
-                    height: "12rem",
-                }
+            createContainer({
+                legendText: 'TimeZone Converter', content: [_('iframe', {
+                    src: `./timezone.html?config=${JSON.stringify(omit(config, 'groups'))}`,
+                    style: {
+                        width: "100%",
+                        height: "12rem",
+                    },
+                    attributeList: {
+                        allow: "clipboard-write 'self' *"
+                    }
+                })]
             });
-            iframe.setAttribute('allow', "clipboard-write 'self' *");
-            createContainer({ legendText: 'TimeZone Converter', content: [iframe] });
         }
     });
 }

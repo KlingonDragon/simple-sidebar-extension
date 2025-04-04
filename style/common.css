@@ -53,17 +53,27 @@ select {
     &:focus-visible {
         box-shadow: inset 0 0 0.0625rem 0.0625rem currentColor;
     }
+
+    label:has(> &) {
+        cursor: pointer;
+    }
 }
 
 textarea {
     text-align: start;
 }
 
-button {
+button,
+::file-selector-button {
     cursor: pointer;
     display: flex;
     justify-content: center;
     align-items: center;
     border-radius: 0.5rem;
     padding: 0.125rem;
+}
+
+::file-selector-button {
+    display: inline-flex;
+    border-radius: 0;
 }

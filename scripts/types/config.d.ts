@@ -1,4 +1,7 @@
-type LinkConfigBase = ({ innerText: string; imgSrc?: never; } | { innerText?: never; imgSrc: string; });
+interface LinkConfigBase {
+    innerText: string;
+    imgSrc?: string;
+}
 type LinkConfig = LinkConfigBase & { href: string; };
 type LinkFunctionConfig = LinkConfigBase & { hrefFunction: ((inputValue: string) => string); };
 type BadgeConfig = { href?: string, src: string; };

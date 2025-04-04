@@ -32,8 +32,8 @@ queueMicrotask(() => {
     configPageFlags({ colourScheme, hideToggleCheckboxes });
     PYTHON.then(({ convertTime }) => {
         const
-            hh = _('input', { type: 'number', min: 0, max: 23, placeholder: 'HH', value: 12 }).on('mouseenter', () => hh.focus()),
-            mm = _('input', { type: 'number', min: 0, max: 59, placeholder: 'MM', value: 0 }).on('mouseenter', () => mm.focus()),
+            hh = _('input', { type: 'number', min: '0', max: '23', placeholder: 'HH', value: '12' }).on('mouseenter', () => hh.focus()),
+            mm = _('input', { type: 'number', min: '0', max: '59', placeholder: 'MM', value: '0' }).on('mouseenter', () => mm.focus()),
             output = _('output').on('click', () => copy(output.innerText)),
             update = () => {
                 if (!(hh.value && mm.value && hh.checkValidity() && mm.checkValidity())) { return; }

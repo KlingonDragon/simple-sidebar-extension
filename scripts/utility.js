@@ -1,7 +1,11 @@
 /// <reference path="types/utility.d.ts"/>
 /// <reference path="types/config.d.ts"/>
+
+/** @type {typeof HTMLElement['prototype']['_']} */
 HTMLElement.prototype._ = function (...children) { this.append(...children.filter(item => item !== undefined)); return this; };
+/** @type {typeof HTMLElement['prototype']['__']} */
 HTMLElement.prototype.__ = function (...children) { this.replaceChildren(...children.filter(item => item !== undefined)); return this; };
+/** @type {typeof HTMLElement['prototype']['on']} */ // @ts-ignore // Implicit any on function params
 HTMLElement.prototype.on = function (type, listener) { this.addEventListener(type, listener); return this; };
 
 const __main = document.querySelector('main');
@@ -10,15 +14,14 @@ export const
     main = __main,
     /** @type {(flags:Partial<PageFlags>)=>void} */
     configPageFlags = (flags) => Object.entries(flags).forEach(([key, value]) => (value ? document.documentElement.dataset[key] = `${value}` : delete document.documentElement.dataset[key])),
-    /** @type {<TagName extends keyof HTMLElementTagNameMap>(tagName: TagName, props?: ElementProps) => HTMLElementTagNameMap[TagName]} */
-    _ = (tagName, { dataset, style, classList, attributeList, ...props } = {}) => {
+    /** @type {<TagName extends keyof HTMLElementTagNameMap, CustomProps extends Record<string, any>>(tagName: TagName, props?: { dataset?: DOMStringMap; style?: Partial<CSSStyleDeclaration>; classList?: (string | undefined)[]; attributeList?: Record<string, string>; customProps?: CustomProps; } & Partial<Omit<HTMLElementTagNameMap[TagName], 'dataset' | 'style' | 'classList'>>) => HTMLElementTagNameMap[TagName] & CustomProps} */
+    _ = (tagName, { dataset, style, classList, attributeList, customProps, ...props } = {}) => {
         const node = document.createElement(tagName);
         if (dataset) { Object.assign(node.dataset, dataset); }
         if (style) { Object.assign(node.style, style); }
         if (classList) { node.classList.add(...classList.filter(item => item !== undefined)); }
         if (attributeList) { Object.entries(attributeList).forEach(([attribute, value]) => node.setAttribute(attribute, value)); }
-        Object.assign(node, props);
-        return node;
+        return Object.assign(node, customProps, props);
     },
     /** @type {(text: string) => void} */
     copy = text => {
@@ -27,6 +30,11 @@ export const
         }).catch((e) => {
             console.warn(e);
         });
+    },
+    /** @type {(fileName:string, value:any)=>void} */
+    downloadJSON = (fileName, value) => {
+        const downloadLink = _('a', { href: URL.createObjectURL(new Blob([JSON.stringify(value)], { type: "application/json" })), download: fileName });
+        downloadLink.click(); downloadLink.remove();
     },
     /** @type {<O, K extends keyof O>(obj: O, key: K)=>Omit<O, K>} */
     omit = (obj, key) => { const { [key]: _key, ...rest } = obj; return rest; },
@@ -51,24 +59,7 @@ export const
         defaultShrink
     }),
     /** @type {({}:LinkConfig) => HTMLAnchorElement} */
-    createStaticLink = ({ innerText, imgSrc, href }) => _('a', { href })._(innerText ?? _('img', { src: imgSrc })),
-    /** @type {({}:LinkConfig) => HTMLDivElement} */
-    createInputLink = ({ innerText, href, imgSrc }) => {
-        const
-            input = _('input', { type: 'text' }),
-            button = _('a', {
-                innerText: 'Open',
-                href: '#',
-                target: '_blank'
-            }),
-            output = _('output');
-        input
-            .on('mouseenter', () => input.focus())
-            .on('input', () => button.href = (output.innerText = (input.value && href.replace('{{{PLACEHOLDER}}}', input.value)) || '') || '#')
-            .on("keypress", (event) => event.key === "Enter" && button.click());
-        button.on('click', event => button.href.startsWith('https://') || event.preventDefault());
-        return _('div', { classList: ['quick-search'] })._(_('label')._(innerText ? _('span', { innerText }) : _('img', { src: imgSrc }), input), button, output);
-    },
+    createStaticLink = ({ innerText, imgSrc, href }) => _('a', { href })._(imgSrc ? _('img', { src: imgSrc, title: innerText }) : innerText),
     /** @type {({}:LinkFunctionConfig) => HTMLDivElement} */
     createInputLinkFunction = ({ innerText, hrefFunction, imgSrc }) => {
         const
@@ -84,8 +75,10 @@ export const
             .on('input', () => button.href = (output.innerText = (input.value && hrefFunction(input.value)) || '') || '#')
             .on("keypress", (event) => event.key === "Enter" && button.click());
         button.on('click', event => button.href.startsWith('https://') || event.preventDefault());
-        return _('div', { classList: ['quick-search'] })._(_('label')._(innerText ? _('span', { innerText }) : _('img', { src: imgSrc }), input), button, output);
+        return _('div', { classList: ['quick-search'] })._(_('label')._(imgSrc ? _('img', { src: imgSrc, title: innerText }) : _('span', { innerText }), input), button, output);
     },
+    /** @type {({}:LinkConfig) => HTMLDivElement} */
+    createInputLink = ({ innerText, href, imgSrc }) => createInputLinkFunction({ innerText, hrefFunction: (value => href.replace('{{{PLACEHOLDER}}}', value)), imgSrc }),
     /** @type {({}:BadgeConfig)=>HTMLAnchorElement|HTMLImageElement} */
     createBadge = ({ href, src }) => {
         const img = _('img', { src, loading: 'lazy' }),
@@ -96,10 +89,19 @@ export const
         img.on('click', refresh); refresh();
         return href ? _('a', { href })._(img) : img;
     },
-    /** @type {({}:{innerText: string; value: string; checked: boolean; onChange: ({}:{value: string; checked: boolean})=>void}) => HTMLLabelElement & {checkBox: {checked: boolean; value: string}}} */
-    // @ts-ignore // checkBox prop applied
+    /** @type {({}:{innerText: string; value: string; checked: boolean; onChange: ({}:{value: string; checked: boolean})=>void}) => HTMLLabelElement & {checkBox: HTMLInputElement}} */
     createToggle = ({ innerText, value, checked, onChange }) => {
-        const checkBox = _('input', { type: 'checkbox', value, checked, attributeList: { tabindex: '-1' } }).on('change', () => onChange(checkBox));
-        return _('label', { checkBox, attributeList: { tabindex: '0' } })._(_('span', { innerText }), checkBox)
+        const checkBox = _('input', { type: 'checkbox', value, checked, tabIndex: -1 }).on('change', () => onChange(checkBox));
+        return _('label', { tabIndex: 0, customProps: { checkBox } })._(_('span', { innerText }), checkBox)
             .on('keydown', ({ key }) => [' ', 'Enter'].includes(key) && checkBox.click());
+    },
+    /** @type {({}:{labelText:string; listID?:string; onSubmit: ({}:{value: string}) => void}) => HTMLLabelElement} */
+    createAddItemInput = ({ labelText, listID, onSubmit }) => {
+        const input = _('input', { type: 'text', attributeList: listID ? { list: listID } : {} }),
+            button = _('button', { innerText: '\u2795', title: labelText, classList: ['green'], style: { borderRadius: '0' } });
+        return _('label', { style: { gridTemplateColumns: 'max-content 1fr max-content' } })._(
+            _('span', { innerText: labelText }),
+            input.on("keypress", (event) => event.key === "Enter" && button.click()),
+            button.on('click', () => input.value && onSubmit(input)),
+        );
     };
