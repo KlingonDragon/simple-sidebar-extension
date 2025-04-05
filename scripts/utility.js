@@ -38,11 +38,11 @@ export const
     },
     /** @type {<O, K extends keyof O>(obj: O, key: K)=>Omit<O, K>} */
     omit = (obj, key) => { const { [key]: _key, ...rest } = obj; return rest; },
-    /** @type {({}:{ legendText: string; content?: AppendItem[]; defaultShrink?:boolean; appendToMain?:boolean }) => HTMLFieldSetElement} */
+    /** @type {({}:{ legendText: string; content?: AppendItem[]; defaultShrink?:boolean; appendToMain?:boolean }) => HTMLFieldSetElement & {container:HTMLDivElement}} */
     createContainer = ({ legendText, content, defaultShrink, appendToMain = true }) => {
         const
             container = _('div', { classList: ['fieldset-container', defaultShrink ? 'shrink' : undefined] })._(...content ?? []),
-            fieldset = _('fieldset')._(_('legend', { innerText: legendText }).on('click', () => container.classList.toggle('shrink')), container);
+            fieldset = _('fieldset', { customProps: { container } })._(_('legend', { innerText: legendText }).on('click', () => container.classList.toggle('shrink')), container);
         appendToMain && main._(fieldset);
         return fieldset;
     },
@@ -95,10 +95,10 @@ export const
         return _('label', { tabIndex: 0, customProps: { checkBox } })._(_('span', { innerText }), checkBox)
             .on('keydown', ({ key }) => [' ', 'Enter'].includes(key) && checkBox.click());
     },
-    /** @type {({}:{labelText:string; listID?:string; onSubmit: ({}:{value: string}) => void}) => HTMLLabelElement} */
-    createAddItemInput = ({ labelText, listID, onSubmit }) => {
-        const input = _('input', { type: 'text', attributeList: listID ? { list: listID } : {} }),
-            button = _('button', { innerText: '\u2795', title: labelText, classList: ['green'], style: { borderRadius: '0' } });
+    /** @type {({}:{labelText:string; buttonIcon:'plus'|'change'; onSubmit: ({}:{value: string}) => void; value?:string; placeholder?:string; listID?:string; colour?:'red'|'yellow'|'green'; }) => HTMLLabelElement} */
+    createTextInput = ({ labelText, buttonIcon, onSubmit, value = '', placeholder = '', listID, colour }) => {
+        const input = _('input', { type: 'text', value, placeholder, attributeList: listID ? { list: listID } : {} }),
+            button = _('button', { innerText: { plus: '\u2795', change: '\uD83D\uDD00' }[buttonIcon], title: labelText, classList: [colour], style: { borderRadius: '0' } });
         return _('label', { style: { gridTemplateColumns: 'max-content 1fr max-content' } })._(
             _('span', { innerText: labelText }),
             input.on("keypress", (event) => event.key === "Enter" && button.click()),

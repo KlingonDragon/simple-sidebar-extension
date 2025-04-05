@@ -58,7 +58,7 @@ fieldset {
         opacity: 1;
         max-height: 100vh;
         border: none;
-        overflow: hidden;
+        overflow-y: auto;
 
         & > div {
             & + & {

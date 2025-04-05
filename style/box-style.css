@@ -36,6 +36,10 @@ button {
         overflow: hidden;
         padding: 0;
 
+        & > span {
+            padding-inline: 0.5rem;
+        }
+
         &::after {
             content: '\01F5D1';
             background-color: var(--red);
@@ -70,7 +74,8 @@ div.box {
         align-content: flex-start;
         justify-content: center;
         align-items: center;
-        gap: 1rem;
+        row-gap: 0.25rem;
+        column-gap: 0.5rem;
 
         & img {
             min-height: 1em;

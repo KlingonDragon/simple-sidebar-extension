@@ -11,8 +11,12 @@
             main {
                 grid-template-columns: 1fr;
 
-                @media (min-width: 700px) {
-                    grid-template: "a b" max-content "c c" max-content / 1fr 1fr;
+                @media (min-width: 480px) {
+                    grid-template: "a b" max-content "g g" max-content / 1fr 1fr;
+
+                    & fieldset:nth-child(3) {
+                        grid-column: g;
+                    }
                 }
             }
         </style>

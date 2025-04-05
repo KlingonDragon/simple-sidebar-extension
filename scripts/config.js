@@ -1,5 +1,5 @@
 /// <reference path="types/chrome-types.d.ts"/>
-import { _, configPageFlags, createAddItemInput, createBox, createContainer, createToggle, downloadJSON, main } from "./utility.js";
+import { _, configPageFlags, createTextInput, createBox, createContainer, createToggle, downloadJSON, main, createStaticLink } from "./utility.js";
 //#region Config Restrictions
 const
     allowedColourSchemes = ['Browser Default', 'Light', 'Dark'],
@@ -120,8 +120,8 @@ async function render() {
                                 _('button', { innerText: tz.replace('/', ' / '), classList: ['delete'], title: `Delete ${tz}` })
                                     .on('click', () => { updateConfig({ tzList: tzList.filter(item => item !== tz) }); })
                             )),
-                            createAddItemInput({
-                                labelText: 'Add Timezone', listID: 'TZ', onSubmit: ({ value }) => {
+                            createTextInput({
+                                labelText: 'Add Timezone', buttonIcon: 'plus', listID: 'TZ', colour: 'green', onSubmit: ({ value }) => {
                                     const newTZ = value.replace(/\s/g, '');
                                     allowedTimeZones.includes(newTZ) && updateConfig({ tzList: [...tzList, newTZ] });
                                 }
@@ -139,38 +139,55 @@ async function render() {
                 ] : []),
             ]
         });
-        const updateGroups = () => updateConfig({ groups });
-        createContainer({
-            legendText: 'Link Groups User Config', content: [
+        const groupContainer = createContainer({ legendText: 'Link Groups User Config' }).container,
+            renderGroups = () => groupContainer.__(
                 createBox('dynamic')._(
                     _('button', { innerText: 'Load Example', classList: ['yellow'] }).on('click',
                         () => updateConfig({ groups: defaultConfig.groups })
                     ),
                     _('button', { innerText: 'Export' }).on('click', () => { downloadJSON(`${Date.now()}.simple-sidebar-link-groups-config.json`, groups); }),
-                    _('label')._(_('span', { innerText: 'Import' }), _('input', { type: 'file' })),
+                    // _('label')._(_('span', { innerText: 'Import' }), _('input', { type: 'file' })),
+                    _('button', { innerText: 'Discard', classList: ['yellow'] }).on('click', render),
+                    _('button', { innerText: 'Save', classList: ['green'] }).on('click', () => updateConfig({ groups })),
                 ),
-                ...groups.map((group) => {
-                    const { legendText, defaultShrink } = group;
-                    return createContainer({
-                        legendText, content: [
-                            createBox('dynamic')._(
-                                createBox('toggles')._(
-                                    createToggle({ innerText: 'Shrink by default', value: '', checked: defaultShrink ?? false, onChange: ({ checked }) => { group.defaultShrink = checked; updateGroups(); } }),
+                createBox()._(
+                    ...groups.map((group) => {
+                        const { legendText, defaultShrink } = group;
+                        return createContainer({
+                            legendText, appendToMain: false, content: [
+                                createBox('small-cols')._(
+                                    createTextInput({ labelText: 'Group name', value: legendText, buttonIcon: 'change', onSubmit: ({ value }) => { group.legendText = value; renderGroups(); } }),
+                                    createBox('toggles')._(
+                                        createToggle({ innerText: 'Shrink by default', value: '', checked: defaultShrink ?? false, onChange: ({ checked }) => { group.defaultShrink = checked; renderGroups(); } }),
+                                    ),
+                                    _('button', { classList: ['delete'] })._(_('span', { innerText: 'Delete' })).on('click', () => {
+                                        const i = groups.indexOf(group); if (i == -1) { return; } groups.splice(i, 1); renderGroups();
+                                    })
                                 ),
-                                _('button', { classList: ['delete'] })._(_('span', { innerText: 'Delete', style: { padding: '0.125rem' } })).on('click', () => {
-                                    const i = groups.indexOf(group); if (i == -1) { return; } groups.splice(i, 1); updateGroups();
-                                })
-                            )
-                        ]
-                    });
-                }),
-                createAddItemInput({ labelText: 'Add group', onSubmit: ({ value }) => updateConfig({ groups: [...groups, { legendText: value }] }) }),
-                createBox('dynamic')._(
-                    _('button', { innerText: 'Save', classList: ['green'] })
-                        .on('click', updateGroups),
-                )
-            ]
-        }).style.gridColumn = '1 / -1';
+                                createBox()._(
+                                    ...(group.staticLinks ?? []).map(linkConfig => createContainer({
+                                        legendText: linkConfig.innerText, appendToMain: false, content: [
+                                            createStaticLink(linkConfig),
+                                            createBox()._(
+                                                createTextInput({ labelText: 'Text', value: linkConfig.innerText, buttonIcon: 'change', onSubmit: ({ value }) => { linkConfig.innerText = value; renderGroups(); } }),
+                                                createTextInput({ labelText: 'URL', value: linkConfig.href, buttonIcon: 'change', onSubmit: ({ value }) => { linkConfig.href = value; renderGroups(); } }),
+                                                createTextInput({ labelText: 'Icon URL', value: linkConfig.imgSrc, buttonIcon: 'change', onSubmit: ({ value }) => { linkConfig.imgSrc = value; renderGroups(); } }),
+                                                _('button', { classList: ['delete'] })._(_('span', { innerText: 'Delete' })).on('click', () => {
+                                                    if (!group.staticLinks) { return; }
+                                                    const i = group.staticLinks.indexOf(linkConfig); if (i == -1) { return; } group.staticLinks.splice(i, 1); renderGroups();
+                                                }),
+                                            ),
+                                        ]
+                                    })),
+                                ),
+                                createTextInput({ labelText: 'Add Static Link', buttonIcon: 'plus', colour: 'green', onSubmit: ({ value }) => { group.staticLinks = [...group?.staticLinks ?? [], { innerText: value, href: 'https://example.com' }]; renderGroups(); } })
+                            ]
+                        });
+                    }),
+                ),
+                createTextInput({ labelText: 'Add group', buttonIcon: 'plus', colour: 'green', onSubmit: ({ value }) => { groups.push({ legendText: value }); renderGroups(); } }),
+            );
+        renderGroups();
     });
 }
 chrome.storage.onChanged.addListener(render);
